@@ -1,14 +1,14 @@
 "use strict";
 console.log("begin");
-const drawHint = (ctx, h, w) => {
+const drawHint = (ctx, size, scale) => {
     ctx.lineWidth = 1;
     ctx.strokeStyle = 'black';
-    const r = w * 0.4;
-    const center = w / 2;
+    const r = size * 0.4 * scale;
+    const center = (size / 2) * scale;
     //vertical
     ctx.beginPath();
-    ctx.moveTo(w / 2, h * 0.1);
-    ctx.lineTo(w / 2, h * 0.9);
+    ctx.moveTo((size / 2) * scale, size * 0.1 * scale);
+    ctx.lineTo((size / 2) * scale, size * 0.9 * scale);
     ctx.stroke();
     ctx.closePath();
     //diagonal1
@@ -47,9 +47,9 @@ const render = () => {
     canvas.height = size * scale;
     let points = [];
     if (ctx) {
-        drawHint(ctx, size, size);
-        ctx.lineWidth = size / 12;
-        const gradient = ctx.createLinearGradient(0, size / 2, size, size / 2);
+        drawHint(ctx, size, scale);
+        ctx.lineWidth = (size / 12) * scale;
+        const gradient = ctx.createLinearGradient(0, (size / 2) * scale, size * scale, (size / 2) * scale);
         gradient.addColorStop(0, "rgb(247, 63, 93)");
         gradient.addColorStop(0.2, "rgb(247, 63, 93)");
         gradient.addColorStop(0.8, "rgb(153, 0, 127)");
@@ -61,14 +61,16 @@ const render = () => {
             mouseDown = true;
             ctx.beginPath();
         });
-        canvas.addEventListener("mouseup", () => {
+        const endStroke = () => {
             mouseDown = false;
             ctx.stroke();
             ctx.closePath();
             strokes.push(points);
             points = [];
             console.log(strokes);
-        });
+        };
+        canvas.addEventListener("mouseup", endStroke);
+        document.addEventListener('blur', endStroke);
         canvas.addEventListener("mousemove", (e) => {
             if (mouseDown) {
                 const ex = e.offsetX * scale;
