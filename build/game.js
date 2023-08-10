@@ -48,7 +48,7 @@ const render = () => {
     let points = [];
     if (ctx) {
         drawHint(ctx, size, scale);
-        ctx.lineWidth = (size / 12) * scale;
+        ctx.lineWidth = (size / 10) * scale;
         const gradient = ctx.createLinearGradient(0, (size / 2) * scale, size * scale, (size / 2) * scale);
         gradient.addColorStop(0, "rgb(247, 63, 93)");
         gradient.addColorStop(0.2, "rgb(247, 63, 93)");

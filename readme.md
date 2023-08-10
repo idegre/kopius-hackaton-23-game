@@ -6,3 +6,9 @@
 # start server
 
 `npm run init`
+
+# TODO
+
+[]. add scoring
+[]. create UI
+[]. add win animation
