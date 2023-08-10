@@ -1,24 +1,23 @@
-"use strict";
-//@ts-ignore
 var Brush;
 var BrushTip;
 var Tips = {};
-function checkObject(obj) {
+(function () {
+  "use strict";
+  function checkObject(obj) {
     return typeof obj != "object" ? {} : obj;
-}
-function checkNumber(number, defaultValue) {
+  }
+  function checkNumber(number, defaultValue) {
     return typeof number != "number" ? defaultValue : number;
-}
-Brush = function (options) {
+  }
+  Brush = function (options) {
     options = checkObject(options);
     this.path = options.path || null;
     this.ctx = options.ctx || null;
-    this.spacing = checkNumber(options.spacing, 0);
+    this.spacing = checkNumber(options.spacing, 10s);
     this.tip = options.tip || new Tips.Rough1();
-    if (this.path != null)
-        this.pathLength = this.path.getTotalLength();
-};
-Brush.prototype = {
+    if (this.path != null) this.pathLength = this.path.getTotalLength();
+  };
+  Brush.prototype = {
     path: null,
     pathLength: 0,
     v: 0,
@@ -27,168 +26,188 @@ Brush.prototype = {
     spacing: 0,
     tip: null,
     getPos: function (v) {
-        v = this._cleanV(v);
-        return this.path.getPointAtLength(v * this.pathLength);
+      v = this._cleanV(v);
+      return this.path.getPointAtLength(v * this.pathLength);
     },
     draw: function () {
-        var v = this._getV();
-        this._render(v);
-        this.lastV = v;
+      var v = this._getV();
+      this._render(v);
+      this.lastV = v;
     },
     drawFromLast: function () {
-        var v = this._getV();
-        var lastV = this.lastV;
-        var spacing = this.spacing;
-        if (spacing > 0) {
-            var dist = Math.abs(v - lastV);
-            var step = this._lenToV(spacing);
-            var steps = Math.ceil(dist / step);
-            step = dist / steps;
-            var curV = lastV;
-            var timeout = 1000;
-            while (timeout > 0 &&
-                ((v > lastV && curV <= v) || (v < lastV && curV >= v))) {
-                timeout--;
-                this._render(curV, {
-                    rotation: 0,
-                    pressure: Math.sqrt(1 - Math.abs(v - 0.5) * 2),
-                });
-                curV += step;
-            }
+      var v = this._getV();
+      var lastV = this.lastV;
+      var spacing = this.spacing;
+      if (spacing > 0) {
+        var dist = Math.abs(v - lastV);
+        var step = this._lenToV(spacing);
+        var steps = Math.ceil(dist / step);
+        step = dist / steps;
+        var curV = lastV;
+        var timeout = 1000;
+        while (
+          timeout > 0 &&
+          ((v > lastV && curV <= v) || (v < lastV && curV >= v))
+        ) {
+          timeout--;
+          this._render(curV, {
+            rotation: 0,
+            pressure: Math.sqrt(1 - Math.abs(v - 0.5) * 2),
+          });
+          curV += step;
         }
-        this.lastV = v;
+      }
+      this.lastV = v;
     },
     _vToLen: function (v) {
-        return v * this.pathLength;
+      return v * this.pathLength;
     },
     _lenToV: function (len) {
-        return len / this.pathLength;
+      return len / this.pathLength;
     },
     _getV: function () {
-        return this._cleanV(this.v);
+      return this._cleanV(this.v);
     },
     _cleanV: function (v) {
-        v = checkNumber(v, this.v);
-        if (v > 1)
-            v = 1;
-        if (v < 0)
-            v = 0;
-        return v;
+      v = checkNumber(v, this.v);
+      if (v > 1) v = 1;
+      if (v < 0) v = 0;
+      return v;
     },
     _render: function (v, options) {
-        v = this._cleanV(v);
-        options = checkObject(options);
-        var rotation = checkNumber(options.rotation, 0);
-        var pressure = checkNumber(options.pressure, 1);
-        var ctx = this.ctx;
-        var pos = this.getPos(v);
-        ctx.save();
-        ctx.translate(pos.x, pos.y);
-        this.tip.draw(ctx, {
-            pressure: pressure,
-        });
-        ctx.restore();
+      v = this._cleanV(v);
+      options = checkObject(options);
+      var rotation = checkNumber(options.rotation, 0);
+      var pressure = checkNumber(options.pressure, 1);
+      var ctx = this.ctx;
+      var pos = this.getPos(v);
+      ctx.save();
+      ctx.translate(pos.x, pos.y);
+      this.tip.draw(ctx, {
+        pressure: pressure,
+      });
+      ctx.restore();
     },
-};
-BrushTip = function (options) {
+  };
+  BrushTip = function (options) {
     options = checkObject(options);
     this.size = checkNumber(options.size, 1);
-};
-BrushTip.prototype = {
+  };
+  BrushTip.prototype = {
     size: 1,
     _currentCtx: null,
     _currentOptions: {},
     draw: function (ctx, options) {
-        options = checkObject(options);
-        this._currentCtx = ctx;
-        this._render(options);
+      options = checkObject(options);
+      this._currentCtx = ctx;
+      this._render(options);
     },
-    _render: function (options) { },
+    _render: function (options) {},
     _drawCircle: function (r, x, y, polar) {
-        x = checkNumber(x, 0);
-        y = checkNumber(y, 0);
-        if (polar) {
-            var a = x;
-            var d = y;
-            x = Math.cos(a) * d;
-            y = Math.sin(a) * d;
-        }
-        var ctx = this._currentCtx;
-        ctx.beginPath();
-        ctx.arc(x, y, r, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.closePath();
+      x = checkNumber(x, 0);
+      y = checkNumber(y, 0);
+      if (polar) {
+        var a = x;
+        var d = y;
+        x = Math.cos(a) * d;
+        y = Math.sin(a) * d;
+      }
+      var ctx = this._currentCtx;
+      ctx.beginPath();
+      ctx.arc(x, y, r, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.closePath();
     },
-};
-Tips.Round = function (options) {
+  };
+  Tips.Round = function (options) {
     BrushTip.call(this, options);
-};
-Tips.Round.prototype = Object.create(BrushTip.prototype);
-Tips.Round.prototype.constructor = Tips.Round;
-Tips.Round.prototype._render = function (options) {
+  };
+  Tips.Round.prototype = Object.create(BrushTip.prototype);
+  Tips.Round.prototype.constructor = Tips.Round;
+  Tips.Round.prototype._render = function (options) {
     BrushTip.prototype._render.call(this, options);
     var pressure = checkNumber(options.pressure, 1);
     var ctx = this._currentCtx;
     ctx.scale(1, 0.4);
     this._drawCircle(6 * this.size);
-};
-// Rough brush
-Tips.Rough1 = function (options) {
+  };
+  // Rough brush
+  Tips.Rough1 = function (options) {
     BrushTip.call(this, options);
     var maxDist = 8;
     this._points = new Array();
     for (var i = 0; i < 15; i++) {
-        var d = Math.pow(Math.random(), 2);
-        var a = Math.random() * Math.PI * 2;
-        var r = 0.1 + Math.pow(1 - d, 2) * 4;
-        d *= maxDist;
-        this._points.push({
-            d: d,
-            a: a,
-            r: r,
-        });
+      var d = Math.pow(Math.random(), 2);
+      var a = Math.random() * Math.PI * 2;
+      var r = 0.1 + Math.pow(1 - d, 2) * 4;
+      d *= maxDist;
+      this._points.push({
+        d: d,
+        a: a,
+        r: r,
+      });
     }
     console.log(this);
-};
-Tips.Rough1.prototype = Object.create(BrushTip.prototype);
-Tips.Rough1.prototype.constructor = Tips.Rough1;
-Tips.Rough1.prototype._points = null;
-Tips.Rough1.prototype._render = function (options) {
+  };
+  Tips.Rough1.prototype = Object.create(BrushTip.prototype);
+  Tips.Rough1.prototype.constructor = Tips.Rough1;
+  Tips.Rough1.prototype._points = null;
+  Tips.Rough1.prototype._render = function (options) {
     BrushTip.prototype._render.call(this, options);
     var pressure = checkNumber(options.pressure, 1);
     var size = this.size;
     var ctx = this._currentCtx;
-    ctx.fillStyle = "rgba(0,0,0,0.8)";
+    ctx.fillStyle = "rgb(0,0,0)";
     var that = this;
     this._points.forEach(function (point, i) {
-        that._drawCircle(point.r * pressure, point.a, point.d, true);
+      that._drawCircle(point.r * pressure, point.a, point.d, true);
     });
-};
-console.log("begin");
-//@ts-ignore
-const requestAnimationFrameOpt = window.requestAnimationFrame || window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame || window.msRequestAnimationFrame;
-window.requestAnimationFrame = requestAnimationFrame;
-const render = () => {
-    console.log('loaded');
-    const canvas = document.getElementById("canvas");
-    const ctx = canvas.getContext("2d");
-    const svg = document.querySelector("svg");
-    const paths = svg.querySelectorAll("path");
-    if (ctx) {
-        for (var i = 0; i < paths.length; i++) {
-            var path = paths[i];
-            var roughBrush = new Brush({
-                path: path,
-                ctx: ctx,
-                spacing: 1
-            });
-            roughBrushes.push(roughBrush);
-        }
-        // ctx.fillStyle = "rgb(0, 0, 0)";
-        // ctx.fillRect(100, 100, 100, 100)
+  };
+})();
+document.addEventListener(
+  "DOMContentLoaded",
+  function () {
+    "use strict";
+    var ctx = document.querySelector("canvas").getContext("2d"),
+      svg = document.querySelector("svg"),
+      paths = svg.querySelectorAll("path"),
+      roughBrushes = [],
+      ovalBrushes = [];
+    ctx.fillStyle = "rgb(0, 0, 0)";
+    for (var i = 0; i < paths.length; i++) {
+      var path = paths[i];
+      var roughBrush = new Brush({
+        path: path,
+        ctx: ctx,
+        spacing: 1,
+      });
+      roughBrushes.push(roughBrush);
+      var ovalBrush = new Brush({
+        path: path,
+        ctx: ctx,
+        spacing: 2,
+        tip: new Tips.Round(),
+      });
+      ovalBrushes.push(ovalBrush);
     }
-    else {
-        console.error('canvas not suppoerted');
+    function animateBrush(brush, i) {
+      var updateBrush = function () {
+        brush.drawFromLast();
+      };
+      ctx.fillStyle = "rgb(0, 0, 0)";
+      TweenMax.to(brush, 1, {
+        v: 1,
+        delay: 0.15 * i,
+        ease: Quint.easeOut,
+        onUpdate: updateBrush,
+        onComplete: updateBrush,
+      });
     }
-};
-window.addEventListener('DOMContentLoaded', render);
+    function animateRough() {
+      ctx.fillStyle = "rgb(0, 0, 0)";
+      roughBrushes.forEach(animateBrush);
+    }
+    animateRough();
+  },
+  false
+);
