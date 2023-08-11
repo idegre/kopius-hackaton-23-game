@@ -75,6 +75,7 @@ const render = () => {
         }
         canvas.addEventListener("mouseup", endStroke)
         document.addEventListener('blur', endStroke)
+        canvas.addEventListener("mouseleave", endStroke)
         canvas.addEventListener("mousemove", (e) => {
             if (mouseDown) {
                 const ex = e.offsetX * scale
