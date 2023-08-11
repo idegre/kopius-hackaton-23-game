@@ -87,13 +87,15 @@ window.requestAnimationFrame = requestAnimationFrame;
 let strokes: Point[][] = []
 let mouseDown = false
 let timer: number | null = null
+let playing = true
 
 const win = () => {
+    clearTimeout(timer as number)
     const logo = document.getElementById('bigLogo');
     const text = document.getElementById('kopiusText');
-
     const canvas = document.getElementById("canvas") as HTMLCanvasElement;
     console.log(logo)
+    playing = false
     if (logo) {
         console.log('adding class')
         canvas.style.visibility = "hidden"
@@ -105,14 +107,16 @@ const win = () => {
 }
 
 const lose = () => {
-    const logo = document.getElementById('sad');
-    const canvas = document.getElementById("canvas") as HTMLCanvasElement;
-    if (logo) {
-        console.log('adding class')
-        canvas.style.visibility = "hidden"
-        logo.classList.add("logoWin");
-        logo.style.visibility = 'visible'
-        logo.style.margin = "25px"
+    if (playing) {
+        const logo = document.getElementById('sad');
+        const canvas = document.getElementById("canvas") as HTMLCanvasElement;
+        if (logo) {
+            console.log('adding class')
+            canvas.style.visibility = "hidden"
+            logo.classList.add("logoWin");
+            logo.style.visibility = 'visible'
+            logo.style.margin = "25px"
+        }
     }
 }
 
@@ -180,7 +184,7 @@ const render = () => {
                 })
                 points = []
                 checkWinLoss()
-                timer = setTimeout(() => { drawScore(), console.log('timeout') }, 2500)
+                timer = setTimeout(() => { drawScore(), console.log('timeout'), lose() }, 1500)
             }
         }
         canvas.addEventListener("mouseup", endStroke)
