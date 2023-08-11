@@ -1,8 +1,11 @@
 "use strict";
 console.log("begin");
-const drawHint = (ctx, size, scale) => {
+const size = 300;
+const scale = 3;
+const drawHint = (ctx) => {
     ctx.lineWidth = 1;
     ctx.strokeStyle = 'black';
+    ctx.setLineDash([30]);
     const r = size * 0.4 * scale;
     const center = (size / 2) * scale;
     //vertical
@@ -23,31 +26,82 @@ const drawHint = (ctx, size, scale) => {
     ctx.lineTo(center - (r * Math.sin(-45)), center - (r * Math.cos(-45)));
     ctx.stroke();
     ctx.closePath();
+    ctx.setLineDash([]);
 };
 const pointDistance = (p1x, p1y, p2x, p2y) => {
     const a = p1x - p2x;
     const b = p1y - p2y;
     return Math.sqrt(a * a + b * b);
 };
+const calculatePointScore = (px, py) => {
+    const r = size * 0.4 * scale;
+    const center = (size / 2) * scale;
+    if (((py > (size * 0.1 * scale))) && (py < (size * 0.9 * scale))) {
+        const d = pointDistance(px, py, (size / 2) * scale, py);
+        if (d < 10) {
+            return 1;
+        }
+        else {
+            if ((py < (center + (r * Math.cos(45)))) && (py > center - (r * Math.cos(45)))) {
+                console.log('solving for diagonals');
+                const y1 = center + (r * Math.cos(45));
+                const y2 = center - (r * Math.cos(45));
+                const x1 = center + (r * Math.sin(45));
+                const x2 = center - (r * Math.sin(45));
+                var slope = (y2 - y1) / (x2 - x1);
+                const lx = ((py - y1) / slope) + x1;
+                const d = pointDistance(px, py, lx, py);
+                if (d < 10) {
+                    return 1;
+                }
+                const y12 = center + (r * Math.cos(45));
+                const y22 = center - (r * Math.cos(45));
+                const x12 = center + (r * Math.sin(45));
+                const x22 = center - (r * Math.sin(45));
+                var slope2 = (y22 - y12) / (x22 - x12);
+                const lx2 = ((py - y12) / slope2) + x12;
+                const d2 = pointDistance(px, py, lx2, py);
+                if (d2 < 10) {
+                    return 1;
+                }
+                return 0;
+            }
+            else {
+                return 0;
+            }
+        }
+    }
+    else {
+        return 0;
+    }
+};
+let score = 0;
 //@ts-ignore
 const requestAnimationFrameOpt = window.requestAnimationFrame || window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame || window.msRequestAnimationFrame;
 window.requestAnimationFrame = requestAnimationFrame;
+let strokes = [];
 let mouseDown = false;
+const checkWinLoss = () => {
+    if ((score > 90) && (strokes.length < 5)) {
+        console.log('win');
+        return;
+    }
+    if (strokes.flat().length > 400 && strokes.length > 5) {
+        console.log('loss');
+    }
+};
 const render = () => {
     console.log('loaded');
     const canvas = document.getElementById("canvas");
     const ctx = canvas.getContext("2d");
     const svg = document.querySelector("svg");
-    let strokes = [];
-    const size = 300;
-    var scale = 3;
     canvas.style.width = size + 'px';
     canvas.style.height = size + 'px';
     canvas.width = size * scale;
     canvas.height = size * scale;
     let points = [];
     if (ctx) {
-        drawHint(ctx, size, scale);
+        drawHint(ctx);
         ctx.lineWidth = (size / 10) * scale;
         const gradient = ctx.createLinearGradient(0, (size / 2) * scale, size * scale, (size / 2) * scale);
         gradient.addColorStop(0, "rgb(247, 63, 93)");
@@ -62,12 +116,17 @@ const render = () => {
             ctx.beginPath();
         });
         const endStroke = () => {
-            mouseDown = false;
-            ctx.stroke();
-            ctx.closePath();
-            strokes.push(points);
-            points = [];
-            console.log(strokes);
+            if (mouseDown) {
+                mouseDown = false;
+                ctx.stroke();
+                ctx.closePath();
+                strokes.push(points);
+                points.forEach(p => {
+                    score = score + calculatePointScore(p[0], p[1]);
+                });
+                points = [];
+                checkWinLoss();
+            }
         };
         canvas.addEventListener("mouseup", endStroke);
         document.addEventListener('blur', endStroke);
