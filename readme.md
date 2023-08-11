@@ -9,6 +9,6 @@
 
 # TODO
 
-[]. add scoring
+[x]. add scoring
 []. create UI
 []. add win animation

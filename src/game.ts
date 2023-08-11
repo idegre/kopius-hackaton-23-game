@@ -43,11 +43,10 @@ const calculatePointScore = (px: number, py: number): number => {
     const center = (size / 2) * scale
     if (((py > (size * 0.1 * scale))) && (py < (size * 0.9 * scale))) {
         const d = pointDistance(px, py, (size / 2) * scale, py)
-        if (d < 10) {
+        if (d < 14) {
             return 1
         } else {
             if ((py < (center + (r * Math.cos(45)))) && (py > center - (r * Math.cos(45)))) {
-                console.log('solving for diagonals')
                 const y1 = center + (r * Math.cos(45))
                 const y2 = center - (r * Math.cos(45))
                 const x1 = center + (r * Math.sin(45))
@@ -55,7 +54,7 @@ const calculatePointScore = (px: number, py: number): number => {
                 var slope = (y2 - y1) / (x2 - x1);
                 const lx = ((py - y1) / slope) + x1;
                 const d = pointDistance(px, py, lx, py)
-                if (d < 10) {
+                if (d < 14) {
                     return 1
                 }
                 const y12 = center + (r * Math.cos(45))
@@ -65,7 +64,7 @@ const calculatePointScore = (px: number, py: number): number => {
                 var slope2 = (y22 - y12) / (x22 - x12);
                 const lx2 = ((py - y12) / slope2) + x12;
                 const d2 = pointDistance(px, py, lx2, py)
-                if (d2 < 10) {
+                if (d2 < 14) {
                     return 1
                 }
                 return 0
@@ -87,15 +86,58 @@ window.requestAnimationFrame = requestAnimationFrame;
 
 let strokes: Point[][] = []
 let mouseDown = false
+let timer: number | null = null
+
+const win = () => {
+    const logo = document.getElementById('bigLogo');
+    const text = document.getElementById('kopiusText');
+
+    const canvas = document.getElementById("canvas") as HTMLCanvasElement;
+    console.log(logo)
+    if (logo) {
+        console.log('adding class')
+        canvas.style.visibility = "hidden"
+        logo.classList.add("logoWin");
+        text!.style.display = 'block'
+
+    }
+    drawScore()
+}
+
+const lose = () => {
+    const logo = document.getElementById('sad');
+    const canvas = document.getElementById("canvas") as HTMLCanvasElement;
+    if (logo) {
+        console.log('adding class')
+        canvas.style.visibility = "hidden"
+        logo.classList.add("logoWin");
+        logo.style.visibility = 'visible'
+        logo.style.margin = "25px"
+    }
+}
+
+const drawScore = () => {
+    const scoreCounter = document.getElementById('scoreCounter');
+    const button = document.getElementById('tryAgain');
+    if (scoreCounter) {
+        scoreCounter.style.visibility = "visible"
+        scoreCounter.textContent = `Score: ${score}`
+        button!.style.display = "block"
+    }
+}
 
 const checkWinLoss = () => {
-    if ((score > 90) && (strokes.length < 5)) {
+    if ((score > 70) && (strokes.length < 5) && (strokes.length > 2)) {
         console.log('win')
+        drawScore()
+        win()
         return
     }
 
-    if (strokes.flat().length > 400 && strokes.length > 5) {
+    if ((score < 90) && (strokes.length > 3)) {
         console.log('loss')
+        drawScore()
+        lose()
     }
 }
 
@@ -125,6 +167,7 @@ const render = () => {
         canvas.addEventListener("mousedown", () => {
             mouseDown = true
             ctx.beginPath();
+            clearTimeout(timer as number)
         })
         const endStroke = () => {
             if (mouseDown) {
@@ -137,9 +180,11 @@ const render = () => {
                 })
                 points = []
                 checkWinLoss()
+                timer = setTimeout(() => { drawScore(), console.log('timeout') }, 2500)
             }
         }
         canvas.addEventListener("mouseup", endStroke)
+        canvas.addEventListener("touchend", endStroke)
         document.addEventListener('blur', endStroke)
         canvas.addEventListener("mouseleave", endStroke)
         canvas.addEventListener("mousemove", (e) => {
@@ -151,7 +196,7 @@ const render = () => {
                     points.push([ex, ey])
                     ctx.stroke();
                 } else {
-                    if (pointDistance(points[points.length - 1][0], points[points.length - 1][1], ex, ey) > 1) {
+                    if (pointDistance(points[points.length - 1][0], points[points.length - 1][1], ex, ey) > 5) {
                         ctx.lineTo(ex, ey)
                         points.push([ex, ey])
                         ctx.stroke();

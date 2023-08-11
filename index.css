@@ -1,3 +1,19 @@
+@font-face {
+  font-family: "circular";
+  src: url("./Fonts/CircularXXWeb-Medium.woff") format("woff");
+}
+
+@keyframes pulse {
+  25% {
+    transform: scale(0.9);
+  }
+  75% {
+    transform: scale(1.1);
+  }
+}
+p {
+  margin: 0px;
+}
 body {
   height: 100%;
   background: linear-gradient(180deg, #f73f5d, #99007f);
@@ -10,6 +26,7 @@ body {
 }
 .canvasHolder {
   background-color: white;
+  position: relative;
   border-radius: 50%;
   padding: 40px;
   height: fit-content;
@@ -17,4 +34,41 @@ body {
 }
 .content {
   padding: 100px;
+}
+.logo {
+  margin: 30px;
+  position: absolute;
+  height: 250px;
+  visibility: hidden;
+}
+.logoWin {
+  animation: pulse 0.3s linear 1;
+  visibility: visible;
+}
+.kopiusText {
+  font-family: "circular";
+  font-size: 80px;
+  text-align: center;
+  width: 100%;
+  margin: 20px 0px;
+}
+.sad {
+  margin: 30px;
+  position: absolute;
+  height: 250px;
+  visibility: hidden;
+}
+.scoreText {
+  font-size: 60px;
+}
+#tryAgain {
+  background-color: aliceblue;
+  font-size: 20px;
+  font-family: "circular";
+  width: fit-content;
+  border-radius: 30px;
+  padding: 10px 20px;
+  margin: 0 auto;
+  cursor: pointer;
+  user-select: none;
 }
