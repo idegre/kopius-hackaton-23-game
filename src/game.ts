@@ -1,6 +1,6 @@
 console.log("begin");
 
-const size = 300
+const size = window.screen.width == window.innerWidth ? 300 : window.innerWidth * 0.8
 const scale = 3;
 
 const drawHint = (ctx: CanvasRenderingContext2D) => {
@@ -98,8 +98,9 @@ const win = () => {
     playing = false
     if (logo) {
         console.log('adding class')
-        canvas.style.visibility = "hidden"
+        canvas.style.display = "none"
         logo.classList.add("logoWin");
+        logo.style.display = 'block'
         text!.style.display = 'block'
 
     }
@@ -112,9 +113,9 @@ const lose = () => {
         const canvas = document.getElementById("canvas") as HTMLCanvasElement;
         if (logo) {
             console.log('adding class')
-            canvas.style.visibility = "hidden"
+            canvas.style.display = "none"
             logo.classList.add("logoWin");
-            logo.style.visibility = 'visible'
+            logo.style.display = 'block'
             logo.style.margin = "25px"
         }
     }
@@ -145,15 +146,35 @@ const checkWinLoss = () => {
     }
 }
 
+const drawNewPoint = (x: number, y: number, points: Point[], ctx: CanvasRenderingContext2D) => {
+    const ex = x * scale
+    const ey = y * scale
+    if (points.length === 0) {
+        ctx.moveTo(ex, ey)
+        points.push([ex, ey])
+        ctx.stroke();
+    } else {
+        if (pointDistance(points[points.length - 1][0], points[points.length - 1][1], ex, ey) > 5) {
+            ctx.lineTo(ex, ey)
+            points.push([ex, ey])
+            ctx.stroke();
+        }
+    }
+}
+
 const render = () => {
     console.log('loaded')
     const canvas = document.getElementById("canvas") as HTMLCanvasElement;
+    const winImg = document.getElementById("bigLogo");
+    const sadImg = document.getElementById("sad");
     const ctx = canvas.getContext("2d");
-    const svg = document.querySelector("svg")
-
 
     canvas.style.width = size + 'px';
     canvas.style.height = size + 'px';
+    winImg!.style.width = size * 0.83 + 'px';
+    winImg!.style.height = size * 0.83 + 'px';
+    sadImg!.style.width = size * 0.83 + 'px';
+    sadImg!.style.height = size * 0.83 + 'px';
     canvas.width = size * scale;
     canvas.height = size * scale;
     let points: Point[] = []
@@ -173,6 +194,11 @@ const render = () => {
             ctx.beginPath();
             clearTimeout(timer as number)
         })
+        canvas.addEventListener("touchstart", () => {
+            mouseDown = true
+            ctx.beginPath();
+            clearTimeout(timer as number)
+        })
         const endStroke = () => {
             if (mouseDown) {
                 mouseDown = false
@@ -188,24 +214,23 @@ const render = () => {
             }
         }
         canvas.addEventListener("mouseup", endStroke)
+        canvas.addEventListener("touchcancel", endStroke)
+
         canvas.addEventListener("touchend", endStroke)
         document.addEventListener('blur', endStroke)
         canvas.addEventListener("mouseleave", endStroke)
+        canvas.addEventListener("touchmove", e => {
+            var rect = canvas.getBoundingClientRect();
+            var x = e.targetTouches[0].pageX - rect.left;
+            var y = e.targetTouches[0].pageY - rect.top;
+            if (mouseDown) {
+                drawNewPoint(x, y, points, ctx)
+                e.preventDefault();
+            }
+        })
         canvas.addEventListener("mousemove", (e) => {
             if (mouseDown) {
-                const ex = e.offsetX * scale
-                const ey = e.offsetY * scale
-                if (points.length === 0) {
-                    ctx.moveTo(ex, ey)
-                    points.push([ex, ey])
-                    ctx.stroke();
-                } else {
-                    if (pointDistance(points[points.length - 1][0], points[points.length - 1][1], ex, ey) > 5) {
-                        ctx.lineTo(ex, ey)
-                        points.push([ex, ey])
-                        ctx.stroke();
-                    }
-                }
+                drawNewPoint(e.offsetX, e.offsetY, points, ctx)
             }
         })
     } else {

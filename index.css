@@ -31,15 +31,18 @@ body {
   padding: 40px;
   height: fit-content;
   width: fit-content;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 .content {
-  padding: 100px;
+  padding: 39px;
 }
-.logo {
-  margin: 30px;
-  position: absolute;
+.imageOverlay {
+  margin: 40px;
   height: 250px;
-  visibility: hidden;
+  display: none;
+  border-radius: 50%;
 }
 .logoWin {
   animation: pulse 0.3s linear 1;
@@ -47,23 +50,17 @@ body {
 }
 .kopiusText {
   font-family: "circular";
-  font-size: 80px;
+  font-size: 5rem;
   text-align: center;
   width: 100%;
   margin: 20px 0px;
 }
-.sad {
-  margin: 30px;
-  position: absolute;
-  height: 250px;
-  visibility: hidden;
-}
 .scoreText {
-  font-size: 60px;
+  font-size: 4rem;
 }
 #tryAgain {
   background-color: aliceblue;
-  font-size: 20px;
+  font-size: 1.25rem;
   font-family: "circular";
   width: fit-content;
   border-radius: 30px;
